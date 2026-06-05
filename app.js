@@ -278,6 +278,8 @@ $("saveEditBtn").addEventListener("click",saveEdit);
 $("cancelEditBtn").addEventListener("click",cancelEdit);
 $("settingsNav").addEventListener("click", () => setPage("settings"));
 $("saveSettingsBtn").addEventListener("click", saveSettingsFromForm);
+$("lastFeedingTimer").addEventListener("click", renderDashboard);
+$("todayScoops").addEventListener("click", renderDashboard);
 
 if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
 
