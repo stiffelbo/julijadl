@@ -272,6 +272,92 @@
       display: block
     }
 
+    /* Dashboard */
+
+    .dashboard {
+      margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(246, 247, 251, .92);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .timer-button {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      min-height: 64px;
+      padding: 12px 10px;
+      font-size: 16px;
+      font-weight: 900;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+      transition:
+        background-color .18s ease,
+        color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .timer-button:active {
+      transform: scale(.98);
+    }
+
+    .timer-button:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .timer-before {
+      background: #fff;
+      color: var(--muted);
+    }
+
+    .timer-feeding {
+      background: #16a34a;
+      color: #fff;
+      animation: timerPulse 1.2s ease-in-out infinite;
+    }
+
+    .timer-overdue {
+      background: #f97316;
+      color: #fff;
+      animation: timerPulse 1.2s ease-in-out infinite;
+    }
+
+    .timer-empty {
+      background: #fff;
+      color: var(--muted);
+    }
+
+    @keyframes timerPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(.94);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .timer-feeding,
+      .timer-overdue {
+        animation: none;
+      }
+    }
+
+
     @media(max-width:360px) {
       .btn {
         min-height: 82px;
@@ -296,33 +382,6 @@
       .icon-btn {
         padding: 7px 8px
       }
-
-      .dashboard {
-        margin-bottom: 14px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        align-items: center;
-      }
-
-      .dashboard .small-btn {
-        grid-column: 1 / -1;
-        min-height: 48px;
-      }
-
-      .dash-label {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-      }
-
-      .dash-value {
-        margin-top: 4px;
-        font-size: 24px;
-        font-weight: 900;
-      }
     }
   </style>
 </head>
@@ -345,10 +404,6 @@
           <label>Alarm po / minuty
             <input id="alarmAfterMinutes" type="number" min="0" max="59" step="5" />
           </label>
-
-          <label>Głośność alarmu
-            <input id="alarmVolume" type="range" min="0" max="100" step="5" />
-          </label>
         </div>
 
         <div class="edit-actions">
@@ -360,14 +415,10 @@
     <section id="page-add" class="page active">
       <div id="dashboard" class="dashboard card">
 
-        <button id="lastFeedingTimer" class="small-btn" disabled>--:--</button>
-
-
-        <button id="todayScoops" class="small-btn" disabled>0 / 28</button>
-
-        <button id="alarmToggleBtn" class="small-btn" type="button">
-          🔕 Alarm OFF
+        <button id="lastFeedingTimer" class="timer-button timer-empty" type="button">
+          Brak karmienia
         </button>
+        <button id="todayScoops" class="timer-button" disabled>0 / 28</button>
       </div>
       <div class="card">
         <div class="grid">

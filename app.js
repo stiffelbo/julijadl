@@ -7,7 +7,8 @@ const SETTINGS_KEY = "baby-tracker-settings-v1";
 const DEFAULT_SETTINGS = {
   dailyScoopsNorm: 28,
   alarmAfterMinutes: 150,
-  alarmEnabled: false
+  alarmEnabled: false,
+  alarmSpanMinutes: 15,
 };
 
 const state = {
@@ -66,31 +67,47 @@ function renderDashboard(){
   const last = getLastFeeding();
   const timerEl = $("lastFeedingTimer");
   const scoopsEl = $("todayScoops");
-  const alarmBtn = $("alarmToggleBtn");
+
+  const nextAlarmTime = last
+    ? new Date(getRowDateTime(last).getTime() + state.settings.alarmAfterMinutes * 60000)
+    : null;
+
+  const now = new Date();
+  const span = state.settings.alarmSpanMinutes;
+
+  const feedingStart = nextAlarmTime
+    ? new Date(nextAlarmTime.getTime() - span * 60000)
+    : null;
+
+  const feedingEnd = nextAlarmTime
+    ? new Date(nextAlarmTime.getTime() + span * 60000)
+    : null;
+
+  const isFeedingTime = nextAlarmTime && now >= feedingStart && now <= feedingEnd;
+  const isFeedingOverdue = nextAlarmTime && now > feedingEnd;
 
   if(timerEl){
-    timerEl.textContent = last
-      ? formatDuration(Date.now() - getRowDateTime(last).getTime())
-      : "brak";
+    timerEl.classList.remove("timer-before", "timer-feeding", "timer-overdue", "timer-empty");
+
+    if(!last){
+      timerEl.textContent = "Brak karmienia";
+      timerEl.classList.add("timer-empty");
+    }else{
+      timerEl.textContent = formatDuration(Date.now() - getRowDateTime(last).getTime());
+
+      if(isFeedingOverdue){
+        timerEl.classList.add("timer-overdue");
+      }else if(isFeedingTime){
+        timerEl.classList.add("timer-feeding");
+      }else{
+        timerEl.classList.add("timer-before");
+      }
+    }
   }
 
   if(scoopsEl){
     scoopsEl.textContent = `${getTodayScoops()} / ${state.settings.dailyScoopsNorm}`;
   }
-
-  if(alarmBtn){
-    alarmBtn.textContent = state.settings.alarmEnabled
-      ? "🔔 Alarm ON"
-      : "🔕 Alarm OFF";
-
-    alarmBtn.classList.toggle("primary", state.settings.alarmEnabled);
-  }
-}
-
-function toggleAlarm(){
-  state.settings.alarmEnabled = !state.settings.alarmEnabled;
-  saveSettings();
-  renderDashboard();
 }
 
 function saveSettings(){
@@ -144,6 +161,7 @@ async function addValue(value){
     saveCache();
     showNotice(`Zapisano: ${value}`);
     renderTable();
+    renderDashboard();
   }catch(err){showNotice(`Błąd zapisu: ${err.message}`,true);}
 }
 
@@ -185,7 +203,6 @@ function renderSettings(){
 
   $("alarmAfterHours").value = h;
   $("alarmAfterMinutes").value = m;
-  $("alarmVolume").value = state.settings.alarmVolume;
 }
 
 function saveSettingsFromForm(){
@@ -195,7 +212,6 @@ function saveSettingsFromForm(){
   state.settings = {
     dailyScoopsNorm: Number($("dailyScoopsNorm").value || 28),
     alarmAfterMinutes: hours * 60 + minutes,
-    alarmVolume: Number($("alarmVolume").value || 80)
   };
 
   saveSettings();
@@ -231,7 +247,7 @@ async function saveEdit(){
     await api.update(payload);
     const index=state.rows.findIndex(r=>Number(r.id)===Number(id));
     if(index>=0)state.rows[index]=payload;
-    saveCache();cancelEdit();renderTable();
+    saveCache();cancelEdit();renderTable();renderDashboard();
   }catch(err){alert(`Błąd zapisu: ${err.message}`);}
 }
 
@@ -242,7 +258,7 @@ async function deleteRow(id){
     state.rows=state.rows.filter(row=>Number(row.id)!==Number(id));
     saveCache();
     if(state.editingId===id)cancelEdit();
-    renderTable();
+    renderTable();renderDashboard();
   }catch(err){alert(`Błąd usuwania: ${err.message}`);}
 }
 
@@ -264,7 +280,6 @@ $("settingsNav").addEventListener("click", () => setPage("settings"));
 $("saveSettingsBtn").addEventListener("click", saveSettingsFromForm);
 
 if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
-$("alarmToggleBtn").addEventListener("click", toggleAlarm);
 
 setInterval(renderDashboard, 3000);
 renderDashboard();
