@@ -266,7 +266,7 @@ $("saveSettingsBtn").addEventListener("click", saveSettingsFromForm);
 if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
 $("alarmToggleBtn").addEventListener("click", toggleAlarm);
 
-setInterval(renderDashboard, 30000);
+setInterval(renderDashboard, 3000);
 renderDashboard();
 renderTable();
 loadRemote();
