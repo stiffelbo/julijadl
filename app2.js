@@ -302,6 +302,8 @@ function renderDashboard() {
   const last = getLastFeeding(state.rows);
   const status = getTimerStatus(last, state.settings);
 
+  console.log("Dashboard status:", { status, last, timerStatus: getTimerStatus(last, state.settings) });
+
   if (timerEl) {
     timerEl.classList.remove(...TIMER_CLASSES);
     timerEl.classList.add(`timer-${status}`);
