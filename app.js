@@ -1,7 +1,101 @@
 const API_BASE="./api/babyevents";
 const CACHE_KEY="baby-tracker-cache-v2";
 const $=(id)=>document.getElementById(id);
-const state={page:"add",rows:loadCache(),editingId:null};
+
+const SETTINGS_KEY = "baby-tracker-settings-v1";
+
+const DEFAULT_SETTINGS = {
+  dailyScoopsNorm: 28,
+  alarmAfterMinutes: 150,
+  alarmEnabled: false
+};
+
+const state = {
+  page: "add",
+  rows: loadCache(),
+  editingId: null,
+  settings: loadSettings()
+};
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return {...DEFAULT_SETTINGS, ...(raw ? JSON.parse(raw) : {})};
+  }catch{
+    return {...DEFAULT_SETTINGS};
+  }
+}
+
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
+function isFeedingValue(value){
+  return ["1", "2", "3", "4"].includes(String(value));
+}
+
+function getRowDateTime(row){
+  return new Date(`${row.date}T${normalizeTime(row.time)}:00`);
+}
+
+function getLastFeeding(){
+  return state.rows
+    .filter(row => isFeedingValue(row.value))
+    .sort((a, b) => getRowDateTime(b) - getRowDateTime(a))[0] || null;
+}
+
+function getTodayScoops(){
+  const today = toDateInputValue(new Date());
+
+  return state.rows
+    .filter(row => row.date === today && isFeedingValue(row.value))
+    .reduce((sum, row) => sum + Number(row.value), 0);
+}
+
+function formatDuration(ms){
+  if(ms < 0) ms = 0;
+
+  const totalMinutes = Math.floor(ms / 60000);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  return `${h}h ${String(m).padStart(2, "0")}m`;
+}
+
+function renderDashboard(){
+  const last = getLastFeeding();
+  const timerEl = $("lastFeedingTimer");
+  const scoopsEl = $("todayScoops");
+  const alarmBtn = $("alarmToggleBtn");
+
+  if(timerEl){
+    timerEl.textContent = last
+      ? formatDuration(Date.now() - getRowDateTime(last).getTime())
+      : "brak";
+  }
+
+  if(scoopsEl){
+    scoopsEl.textContent = `${getTodayScoops()} / ${state.settings.dailyScoopsNorm}`;
+  }
+
+  if(alarmBtn){
+    alarmBtn.textContent = state.settings.alarmEnabled
+      ? "🔔 Alarm ON"
+      : "🔕 Alarm OFF";
+
+    alarmBtn.classList.toggle("primary", state.settings.alarmEnabled);
+  }
+}
+
+function toggleAlarm(){
+  state.settings.alarmEnabled = !state.settings.alarmEnabled;
+  saveSettings();
+  renderDashboard();
+}
+
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
 
 const api={
   async get(){return parseResponse(await fetch(`${API_BASE}/get.php`));},
@@ -63,12 +157,49 @@ function showNotice(text,error=false){
 }
 
 function setPage(page){
-  state.page=page;
-  $("page-add").classList.toggle("active",page==="add");
-  $("page-table").classList.toggle("active",page==="table");
-  $("addNav").classList.toggle("active",page==="add");
-  $("tableNav").classList.toggle("active",page==="table");
-  if(page==="table"){renderTable();loadRemote();}
+  state.page = page;
+
+  $("page-add").classList.toggle("active", page === "add");
+  $("page-table").classList.toggle("active", page === "table");
+  $("page-settings").classList.toggle("active", page === "settings");
+
+  $("addNav").classList.toggle("active", page === "add");
+  $("tableNav").classList.toggle("active", page === "table");
+  $("settingsNav").classList.toggle("active", page === "settings");
+
+  if(page === "table"){
+    renderTable();
+    loadRemote();
+  }
+
+  if(page === "settings"){
+    renderSettings();
+  }
+}
+
+function renderSettings(){
+  $("dailyScoopsNorm").value = state.settings.dailyScoopsNorm;
+
+  const h = Math.floor(state.settings.alarmAfterMinutes / 60);
+  const m = state.settings.alarmAfterMinutes % 60;
+
+  $("alarmAfterHours").value = h;
+  $("alarmAfterMinutes").value = m;
+  $("alarmVolume").value = state.settings.alarmVolume;
+}
+
+function saveSettingsFromForm(){
+  const hours = Number($("alarmAfterHours").value || 0);
+  const minutes = Number($("alarmAfterMinutes").value || 0);
+
+  state.settings = {
+    dailyScoopsNorm: Number($("dailyScoopsNorm").value || 28),
+    alarmAfterMinutes: hours * 60 + minutes,
+    alarmVolume: Number($("alarmVolume").value || 80)
+  };
+
+  saveSettings();
+  showNotice("Zapisano ustawienia");
 }
 
 function renderTable(){
@@ -129,7 +260,13 @@ $("refreshBtn").addEventListener("click",loadRemote);
 $("clearLocalBtn").addEventListener("click",clearLocalCache);
 $("saveEditBtn").addEventListener("click",saveEdit);
 $("cancelEditBtn").addEventListener("click",cancelEdit);
+$("settingsNav").addEventListener("click", () => setPage("settings"));
+$("saveSettingsBtn").addEventListener("click", saveSettingsFromForm);
 
 if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
+$("alarmToggleBtn").addEventListener("click", toggleAlarm);
+
+setInterval(renderDashboard, 30000);
+renderDashboard();
 renderTable();
 loadRemote();

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="pl">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -7,50 +8,371 @@
   <link rel="manifest" href="./manifest.json" />
   <title>Baby tracker</title>
   <style>
-    :root{--bg:#f6f7fb;--card:#fff;--text:#172033;--muted:#6b7280;--border:#e5e7eb;--primary:#2563eb;--primary-soft:#dbeafe;--ok:#16a34a;--danger:#dc2626;--shadow:0 10px 30px rgba(15,23,42,.08)}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;padding:18px 14px 92px}
-    .app{max-width:520px;margin:0 auto}
-    h1{margin:0 0 16px;font-size:24px;line-height:1.15}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .btn{appearance:none;border:0;border-radius:20px;min-height:92px;padding:16px 12px;font-size:24px;font-weight:800;background:var(--primary-soft);color:var(--primary);cursor:pointer;touch-action:manipulation;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12)}
-    .btn.big{font-size:34px}
-    .btn:active,.small-btn:active,.icon-btn:active,.nav-btn:active{transform:scale(.98)}
-    .notice{min-height:42px;margin:14px 0 0;padding:11px 13px;border-radius:14px;color:var(--ok);background:#dcfce7;font-weight:700;opacity:0;transform:translateY(4px);transition:.18s ease}
-    .notice.show{opacity:1;transform:translateY(0)}
-    .notice.error{color:var(--danger);background:#fee2e2}
-    .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-    .small-btn,.icon-btn{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}
-    .small-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-    .small-btn.danger,.icon-btn.danger{color:var(--danger)}
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{text-align:left;padding:11px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
-    th{color:var(--muted);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#f9fafb}
-    td.value{font-size:20px;font-weight:800}
-    .actions{white-space:nowrap;text-align:right}
-    .icon-btn{padding:8px 9px;margin-left:4px;border-radius:10px}
-    .empty{padding:22px 10px;color:var(--muted);text-align:center;font-size:15px}
-    .edit-panel{display:none;margin-bottom:12px}
-    .edit-panel.active{display:block}
-    .edit-title{font-size:16px;font-weight:900;margin:0 0 12px}
-    .form-grid{display:grid;gap:10px}
-    label{display:grid;gap:5px;font-size:13px;font-weight:800;color:var(--muted)}
-    input,select{width:100%;border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;color:var(--text);background:#fff}
-    .edit-actions{display:flex;gap:8px;margin-top:12px}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(246,247,251,.92);backdrop-filter:blur(12px);border-top:1px solid var(--border)}
-    .nav-inner{max-width:520px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .nav-btn{border:0;border-radius:16px;padding:15px 12px;font-size:16px;font-weight:900;background:#fff;color:var(--muted);cursor:pointer;box-shadow:0 4px 16px rgba(15,23,42,.06)}
-    .nav-btn.active{background:var(--primary);color:#fff}
-    .page{display:none}.page.active{display:block}
-    @media(max-width:360px){.btn{min-height:82px;font-size:22px}.btn.big{font-size:30px}body{padding-left:10px;padding-right:10px}th,td{padding-left:4px;padding-right:4px}.icon-btn{padding:7px 8px}}
+    :root {
+      --bg: #f6f7fb;
+      --card: #fff;
+      --text: #172033;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --ok: #16a34a;
+      --danger: #dc2626;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08)
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding: 18px 14px 92px
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      line-height: 1.15
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: var(--shadow)
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 20px;
+      min-height: 92px;
+      padding: 16px 12px;
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--primary-soft);
+      color: var(--primary);
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .12)
+    }
+
+    .btn.big {
+      font-size: 34px
+    }
+
+    .btn:active,
+    .small-btn:active,
+    .icon-btn:active,
+    .nav-btn:active {
+      transform: scale(.98)
+    }
+
+    .notice {
+      min-height: 42px;
+      margin: 14px 0 0;
+      padding: 11px 13px;
+      border-radius: 14px;
+      color: var(--ok);
+      background: #dcfce7;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: .18s ease
+    }
+
+    .notice.show {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    .notice.error {
+      color: var(--danger);
+      background: #fee2e2
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap
+    }
+
+    .small-btn,
+    .icon-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor: pointer
+    }
+
+    .small-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary)
+    }
+
+    .small-btn.danger,
+    .icon-btn.danger {
+      color: var(--danger)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 11px 6px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: #f9fafb
+    }
+
+    td.value {
+      font-size: 20px;
+      font-weight: 800
+    }
+
+    .actions {
+      white-space: nowrap;
+      text-align: right
+    }
+
+    .icon-btn {
+      padding: 8px 9px;
+      margin-left: 4px;
+      border-radius: 10px
+    }
+
+    .empty {
+      padding: 22px 10px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 15px
+    }
+
+    .edit-panel {
+      display: none;
+      margin-bottom: 12px
+    }
+
+    .edit-panel.active {
+      display: block
+    }
+
+    .edit-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin: 0 0 12px
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted)
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fff
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(246, 247, 251, .92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border)
+    }
+
+    .nav-inner {
+      max-width: 520px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 12px;
+      font-size: 16px;
+      font-weight: 900;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, .06)
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #fff
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block
+    }
+
+    @media(max-width:360px) {
+      .btn {
+        min-height: 82px;
+        font-size: 22px
+      }
+
+      .btn.big {
+        font-size: 30px
+      }
+
+      body {
+        padding-left: 10px;
+        padding-right: 10px
+      }
+
+      th,
+      td {
+        padding-left: 4px;
+        padding-right: 4px
+      }
+
+      .icon-btn {
+        padding: 7px 8px
+      }
+
+      .dashboard {
+        margin-bottom: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .dashboard .small-btn {
+        grid-column: 1 / -1;
+        min-height: 48px;
+      }
+
+      .dash-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+      }
+
+      .dash-value {
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 900;
+      }
+    }
   </style>
 </head>
+
 <body>
   <main class="app">
-    <h1>Baby tracker</h1>
+    <section id="page-settings" class="page">
+      <div class="card">
+        <p class="edit-title">Ustawienia</p>
+
+        <div class="form-grid">
+          <label>Norma dzienna / miarki
+            <input id="dailyScoopsNorm" type="number" min="1" step="1" />
+          </label>
+
+          <label>Alarm po / godziny
+            <input id="alarmAfterHours" type="number" min="0" step="1" />
+          </label>
+
+          <label>Alarm po / minuty
+            <input id="alarmAfterMinutes" type="number" min="0" max="59" step="5" />
+          </label>
+
+          <label>Głośność alarmu
+            <input id="alarmVolume" type="range" min="0" max="100" step="5" />
+          </label>
+        </div>
+
+        <div class="edit-actions">
+          <button id="saveSettingsBtn" class="small-btn primary" type="button">Zapisz ustawienia</button>
+        </div>
+      </div>
+    </section>
 
     <section id="page-add" class="page active">
+      <div id="dashboard" class="dashboard card">
+        <div>
+          <div class="dash-label">Ostatnie karmienie</div>
+          <div id="lastFeedingTimer" class="dash-value">--:--</div>
+        </div>
+
+        <div>
+          <div class="dash-label">Dzisiaj</div>
+          <div id="todayScoops" class="dash-value">0 / 28</div>
+        </div>
+
+        <button id="alarmToggleBtn" class="small-btn" type="button">
+          🔕 Alarm OFF
+        </button>
+      </div>
       <div class="card">
         <div class="grid">
           <button class="btn big" data-value="1">1</button>
@@ -59,6 +381,7 @@
           <button class="btn big" data-value="4">4</button>
           <button class="btn" data-value="💩">💩 kupa</button>
           <button class="btn" data-value="🧼">🧼 mycie</button>
+          <button class="btn" data-value="💊">💊 vit D</button>
         </div>
         <div id="notice" class="notice">Zapisano</div>
       </div>
@@ -70,8 +393,13 @@
         <div class="form-grid">
           <label>Wartość
             <select id="editValue">
-              <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-              <option value="💩">💩 kupa</option><option value="🧼">🧼 mycie</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="💩">💩 kupa</option>
+              <option value="🧼">🧼 mycie</option>
+              <option value="💊">💊 vit D</option>
             </select>
           </label>
           <label>Data <input id="editDate" type="date" /></label>
@@ -87,7 +415,9 @@
         <button id="refreshBtn" class="small-btn">Odśwież</button>
         <button id="clearLocalBtn" class="small-btn danger">Wyczyść cache</button>
       </div>
-      <div class="card"><div id="tableWrap"></div></div>
+      <div class="card">
+        <div id="tableWrap"></div>
+      </div>
     </section>
   </main>
 
@@ -95,9 +425,11 @@
     <div class="nav-inner">
       <button id="addNav" class="nav-btn active" type="button">➕ Zapis</button>
       <button id="tableNav" class="nav-btn" type="button">📋 Tabela</button>
+      <button id="settingsNav" class="nav-btn" type="button">⚙️ Menu</button>
     </div>
   </nav>
 
   <script src="./app.js"></script>
 </body>
+
 </html>
